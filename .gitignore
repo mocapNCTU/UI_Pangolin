@@ -1,4 +1,11 @@
-build
+build/
+devel/
+*~
+*.bag
+*.pyc
+.DS_Store
+.idea/
+
 
 # Compiled Object files
 *.slo
