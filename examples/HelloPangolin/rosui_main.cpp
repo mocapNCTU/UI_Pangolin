@@ -15,6 +15,12 @@
 
 
 
+enum UI_option{
+	simulate3D=1,camview=2
+};
+
+int UI_status = simulate3D;
+
 class CamOnUI{
 
 public:	
@@ -97,7 +103,7 @@ void fZ(){Z++;}
 
 
 void UISwitch(){
-
+	(UI_status== simulate3D)?UI_status=camview:UI_status= simulate3D;
 	std::cout << "You typed ctrl-r or pushed reset" << std::endl;
 }
 
@@ -109,7 +115,7 @@ int main( int /*argc*/, char** /*argv*/ )
 
     // Define Projection and initial ModelView matrix
     pangolin::OpenGlRenderState s_cam(
-        pangolin::ProjectionMatrix(768,768,420,420,384,384,0.2,100),
+        pangolin::ProjectionMatrix(640,480,420,420,320,240,0.2,100),
         pangolin::ModelViewLookAt(-10,3,-10, 0,0,0, pangolin::AxisY)
     );
 
@@ -118,7 +124,7 @@ int main( int /*argc*/, char** /*argv*/ )
 
  	// Create Interactive View in window
  	pangolin::View& d_cam = pangolin::CreateDisplay();
- 	d_cam.SetBounds(0.0, 1.0, 0.0, 1.0, -1024.0f/768.0f);
+ 	d_cam.SetBounds(0.0, 1.0, pangolin::Attach::Pix(UI_WIDTH), 1.0, -1024.0f/768.0f);
  	pangolin::Handler3D handler(s_cam); 
 	d_cam.SetHandler(&handler);                                         
 
@@ -170,10 +176,43 @@ int main( int /*argc*/, char** /*argv*/ )
 	CamOnUI cam2( glm::vec3(3.2,3.1,-2.0) , 0.5, 0, 0, 200);
 	CamOnUI cam3( glm::vec3(-1.2,3.0,-4.0) , 0.5, 0, -80,-60);    		
 
+
+//  Switch 2----
+
+ 	pangolin::View& d_cam1 = pangolin::Display("cam1")
+   .SetAspect(640.0f/480.0f);
+
+ 	pangolin::View& d_cam2 = pangolin::Display("cam2")
+   .SetAspect(640.0f/480.0f);
+
+ 	pangolin::View& d_cam3 = pangolin::Display("cam3")
+   .SetAspect(640.0f/480.0f);
+
+ 	pangolin::View& d_cam4 = pangolin::Display("cam4")
+   .SetAspect(640.0f/480.0f);
+                                                                     
+
+	pangolin::Display("multi")
+    .SetBounds(0.0, 1.0, pangolin::Attach::Pix(UI_WIDTH), 1.0)
+    .SetLayout(pangolin::LayoutEqual)
+    .AddDisplay(d_cam1)
+    .AddDisplay(d_cam2)                 
+    .AddDisplay(d_cam3)
+    .AddDisplay(d_cam4);
+
+	const int width =  640;
+	const int height = 480;                                                                  
+	pangolin::GlTexture imageTexture(width,height,GL_RGB,false,0,GL_RGB,GL_UNSIGNED_BYTE);
+
+
+
 	while( !pangolin::ShouldQuit() )
     {
         // Clear screen and activate view to render into
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+
+		if(UI_status == simulate3D){
 		d_cam.Activate(s_cam);
 		glBegin( GL_LINES );
 			glColor3f(1.0,1.0,1.0);
@@ -210,9 +249,27 @@ int main( int /*argc*/, char** /*argv*/ )
 		ui_cam3_rotx = cam3.Rx;
 		ui_cam3_roty = cam3.Ry;     
 		ui_cam3_rotz = cam3.Rz; 
+		}
+		
+		else{
+			d_cam1.Activate(s_cam);
+			pangolin::glDrawColouredCube();
+			
+			d_cam2.Activate(s_cam);
+			glColor4f(1.0f,1.0f,1.0f,1.0f);
+			imageTexture.RenderToViewport();
+
+			d_cam3.Activate(s_cam);
+			pangolin::glDrawColouredCube();        
+			
+			d_cam4.Activate(s_cam);
+			glColor4f(1.0f,1.0f,1.0f,1.0f);
+			imageTexture.RenderToViewport();
 
 
+		}
 
+		
 
 		// Swap frames and Process Events
         pangolin::FinishFrame();
